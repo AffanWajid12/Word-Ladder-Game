@@ -48,7 +48,6 @@ for word in words_list:
         else:
             break
 
-print(words_graph)
 
 # Now we got the whole words of list inside a graph. Each word is connected with an another word whose letter difference is by one letter only.
 
@@ -105,9 +104,15 @@ while True:
 
 while starting_word != ending_word:
     possible_word = input("Enter the next word. Remember you can only change one letter from {0}: ".format(starting_word))
-    if possible_word not in words_graph or not is_one_letter_diff(starting_word,possible_word) or not check_valid_move(possible_word,ending_word,words_graph):
-        print(is_one_letter_diff(starting_word,possible_word))
-        print("Nope choose again!")
+    if possible_word not in words_graph:
+        print("Nope! Word doesn't exist in the dictionary")
+    elif not is_one_letter_diff(starting_word,possible_word):
+        print("Nope! There should only be a one letter difference")
+    elif not check_valid_move(possible_word,ending_word,words_graph):
+        print("Nope! There is no path for this word although it exists")
+    elif ending_word == possible_word:
+        print("Congrats you won!")
+        break
     else:
-        print("Good job! Lets get to the next oness!")
+        print("Good job! Lets get to the next ones!")
         starting_word = possible_word
