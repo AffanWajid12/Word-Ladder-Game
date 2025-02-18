@@ -51,7 +51,7 @@ for word in words_list:
 
 # Now we got the whole words of list inside a graph. Each word is connected with an another word whose letter difference is by one letter only.
 
-#Bfs to make the word ladder from one word to the next by seeing if they both have a connection of some sorts
+#Bfs to make the word ladder from one word to the next by seeing if they both have a connection of some sort
 def bfs(start_word,target_word,words_graph):
     visited = set()
     queue = [start_word]
