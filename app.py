@@ -109,5 +109,5 @@ while starting_word != ending_word:
         print(is_one_letter_diff(starting_word,possible_word))
         print("Nope choose again!")
     else:
-        print("Good job! Lets get to the next ones!")
+        print("Good job! Lets get to the next oness!")
         starting_word = possible_word
