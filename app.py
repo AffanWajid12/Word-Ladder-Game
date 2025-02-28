@@ -1,3 +1,4 @@
+from ucs_module import ucs
 
 class WNode:
     def __init__(self,word_name,parent,cost):
@@ -91,6 +92,7 @@ def check_valid_move(start_word,target_word,words_graph):
     return False
 
 print(bfs('cat','big',words_graph))
+print(ucs(words_graph, "cat", "big"))
 
 print("Welcome to the game")
 while True:
