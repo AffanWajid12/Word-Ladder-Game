@@ -238,25 +238,23 @@ def get_graph_dict(depth):
     from collections import deque
 
     words_at_depth = {}
-    queue = deque([(start_word, 0)])  # (word, current_depth)
+    queue = deque([(start_word, 0)])
     visited = set()
 
     while queue:
         word, current_depth = queue.popleft()
 
         if current_depth > depth:
-            return words_at_depth  # No need to continue processing
+            return words_at_depth
 
         if word in visited:
-            continue  # Skip already visited words
+            continue
         
         visited.add(word)
-        
-        # Add the word and its neighbors to the dictionary
+
         if current_depth <= depth:
             words_at_depth[word] = words_graph.get(word, [])
 
-        # Add neighbors to the queue to continue exploring
         for neighbor in words_graph.get(word, []):
             if neighbor not in visited:
                 queue.append((neighbor, current_depth + 1))

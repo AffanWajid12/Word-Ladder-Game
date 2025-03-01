@@ -2,11 +2,14 @@ import streamlit as st
 from pyvis.network import Network
 import requests
 
+# setups the thing
 st.set_page_config(page_title="My Streamlit App", layout="wide")
 
+# all the tabs
 tab_names = ["Beginner", "Advanced", "Challenge"]
 tabs = st.tabs(tab_names)
 
+# its a func that gets shortest path by algo
 def get_shortest_path(algorithm, start_word, end_word, banned_words):
     url = f"http://localhost:5000/shortest-path/{algorithm}"  # Adjust if hosted elsewhere
     payload = {
@@ -27,6 +30,7 @@ def get_shortest_path(algorithm, start_word, end_word, banned_words):
     except requests.exceptions.RequestException as e:
         return {"error": "Request failed", "details": str(e)}
 
+# start the game by getting start end and banned
 def start_game(difficulty, game_state_name):
     if game_state_name not in st.session_state:
         api_url = f"http://127.0.0.1:5000/start-game/{difficulty}"
@@ -47,6 +51,7 @@ def start_game(difficulty, game_state_name):
         else:
             st.session_state[game_state_name] = None
 
+# validates if mvoe is okay
 def validate_word(game_state_name, input_variable):
 
     if game_state_name not in st.session_state:
@@ -58,7 +63,7 @@ def validate_word(game_state_name, input_variable):
         return
 
     if st.session_state[game_state_name]["current_word"] == st.session_state[input_variable] and st.session_state[input_variable] != st.session_state[game_state_name]["end_word"]:
-        st.error(f"❌ '{st.session_state[input_variable]}' is the same as current word!")
+        st.error(f"'{st.session_state[input_variable]}' is the same as current word!")
         return
 
     api_url = "http://127.0.0.1:5000/validate-move"
@@ -74,31 +79,33 @@ def validate_word(game_state_name, input_variable):
 
         if data.get("valid"):
             st.session_state[game_state_name]["guessed_words"].append(st.session_state[input_variable])  # Add to list
-            st.success(f"✅ '{st.session_state[input_variable]}' is a valid move!")
+            st.success(f"'{st.session_state[input_variable]}' is a valid move!")
             st.session_state[game_state_name]["current_word"] = st.session_state[input_variable]
             st.rerun()
         else:
-            st.error(f"❌ '{st.session_state[input_variable]}' is not a valid move!")
+            st.error(f"'{st.session_state[input_variable]}' is not a valid move!")
 
     if st.session_state[input_variable] == st.session_state[game_state_name]["end_word"]:
-        st.success(f"✅ You reached the end word in only {len(st.session_state[game_state_name]["guessed_words"])}!")
+        st.success(f"You reached the end word in only {len(st.session_state[game_state_name]["guessed_words"])}!")
 
+# makes the graph
 def create_graph(words_dict):
     net = Network(height="600px", width="100%", bgcolor="#ffffff", font_color="black")
     
     for word, neighbors in words_dict.items():
-        if word not in net.get_nodes():
+        if word not in net.get_nodes(): # add the words
             net.add_node(word, label=word, title=word)
 
-        for neighbor in neighbors:
+        for neighbor in neighbors: #add the neighbours as some may not be in the dict
             if neighbor not in net.get_nodes():
                 net.add_node(neighbor, label=neighbor, title=neighbor)
-            net.add_edge(word, neighbor)
+            net.add_edge(word, neighbor) #connectes them
     
     # Generate the graph HTML
     net.show_buttons(filter_=["physics"])
     return net
 
+# puts graph to the webpage
 def display_graph(depth, start_word):
     response = requests.get(f"http://localhost:5000/graph/{depth}", json={"start_word": start_word})
     
@@ -113,6 +120,7 @@ def display_graph(depth, start_word):
     else:
         st.error("Error fetching graph data from API.")
 
+# sets the tabs 
 def tab_container(state_name, input_name, difficulty, tabName):
     st.subheader(tabName)
 
@@ -181,6 +189,7 @@ def tab_container(state_name, input_name, difficulty, tabName):
     else:
         st.error("Error fetching data. Please reload!")
 
+# displays the tabs
 for tab, name in zip(tabs, tab_names):
     with tab:
         tab_container(f"{name.lower()}_game_state", f"{name.lower()}_user_input", f"{name.lower()}", name)
