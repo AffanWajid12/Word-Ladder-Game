@@ -1,5 +1,5 @@
 from ucs_module import ucs
-
+from astar_module import astar
 class WNode:
     def __init__(self,word_name,parent,cost):
         self.word_name = word_name
@@ -91,8 +91,8 @@ def check_valid_move(start_word,target_word,words_graph):
 
 print(bfs('cat','big',words_graph))
 print(ucs(words_graph, "cat", "big"))
-
-print("Welcome to the game")
+print(astar(words_graph, "cat", "big"))
+print("Welcome to the games")
 while True:
     starting_word = input("Enter the starting word: ")
     ending_word = input("Enter the starting word: ")
@@ -116,5 +116,3 @@ while starting_word != ending_word:
     else:
         print("Good job! Lets get to the next ones!")
         starting_word = possible_word
-
-# select banned words in the function based on a word choosen
