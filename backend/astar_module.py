@@ -29,7 +29,7 @@ def diff_letters(word1,word2):
         if word1[i] != word2[i]:
             count += 1
     return count
-def astar(words_graph, start_word, end_word):
+def astar(words_graph, start_word, end_word, banned_words=[]):
     queue = _PriorityQueue()
 
     queue.enqueue((0, start_word, None))
@@ -51,6 +51,9 @@ def astar(words_graph, start_word, end_word):
             return _getFullPath(visited, curr_word)
 
         for neighbour in words_graph.get(curr_word, []):
+            if neighbour in banned_words:
+                continue
+
             new_cost = curr_cost + 1 + heruistic_cost[curr_word]  # each edge is of one cost
             if neighbour not in visited or new_cost < visited[neighbour][0]:
                 queue.enqueue((new_cost, neighbour, curr_word))

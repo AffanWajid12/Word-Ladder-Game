@@ -4,6 +4,7 @@ from enum import Enum
 from collections import defaultdict
 
 from ucs_module import ucs
+from astar_module import astar
 
 app = Flask(__name__)
 
@@ -102,16 +103,35 @@ def build_graph(words_list):
 
     return dict(words_graph)
 
+# search by bfs
+def bfs(words_graph, start_word, target_word, banned_words=[]):
+    visited = set()
+    queue = [start_word]
+    path =dict()
+    path[start_word] = None
+    while queue:
+        child_node = queue.pop(0)
+        if child_node in banned_words:
+            continue
+        visited.add(child_node)
+        for word in words_graph.get(child_node, []):
+            if word not in visited:
+                queue.append(word)
+                path[word] = child_node
+        if target_word in visited:
+            actual_path = []
+            end = target_word
+            while end:
+                actual_path.append(end)
+                end = path[end]
+            actual_path.reverse()
+            return actual_path
+
+    return []
+
 words_list = get_words_list('words_alpha.txt')
 words_graph = build_graph(words_list)
 # words_graph = dict()
-
-# the algorithms
-# the graph itself
-# if in graph check the next one
-# beginner 3 words, advanced anywhere between 4 and 5
-# greater than six with banned words
-# 
 
 @app.route("/start-game/<difficulty>", methods=["GET"])
 def getStartingWords(difficulty):
@@ -123,23 +143,34 @@ def getStartingWords(difficulty):
             if start_word is None:
                 return jsonify({"error": "No words found for this difficulty"}), 400
             else:
-                return jsonify({"start_word": start_word, "end_word": end_word})
+                return jsonify({
+                    "start_word": start_word,
+                    "end_word": end_word,
+                    "banned_words": []
+                }), 200
 
         elif difficulty == "advanced":
             start_word, end_word = get_two_connected_words(words_graph, random.sample([4,5], 1)[0], 5)
             if start_word is None:
                 return jsonify({"error": "No words found for this difficulty"}), 400
             else:
-                return jsonify({"start_word": start_word, "end_word": end_word})
+                return jsonify({
+                    "start_word": start_word,
+                    "end_word": end_word,
+                    "banned_words": []  # Send empty banned words
+                }), 200
 
         elif difficulty == "challenge":
             start_word, end_word = get_two_connected_words(words_graph, random.sample([4,5,6,7], 1)[0], 5)
             banned_words = get_banned_words(words_graph, start_word, end_word, 2)
-            return jsonify({
-                "start_word": start_word,
-                "end_word": end_word,
-                "banned_words": banned_words
-            })
+            if start_word is None:
+                return jsonify({"error": "No words found for this difficulty"}), 400
+            else:
+                return jsonify({
+                    "start_word": start_word,
+                    "end_word": end_word,
+                    "banned_words": banned_words
+                }), 200
 
         else:
             return "Invalid difficulty"
@@ -169,13 +200,70 @@ def validate_move():
         "valid": isvalid
     })
 
-@app.route('/')
-def home():
-    return "Hello, Flask is running!"
+@app.route('/shortest-path/<algorithm>', methods=["GET"])
+def run_bfs(algorithm):
+    data = request.get_json()
+    start_word = data.get("start_word")
+    target_word = data.get("target_word")
+    banned_words = data.get("banned_words",[])
 
-@app.route('/api/data', methods=['GET'])
-def get_data():
-    return jsonify({"message": "This is an API endpoint!"})
+    if not start_word or not target_word:
+        return jsonify({
+            "message": "current_word or next_word is not in body"
+        })
+
+    if target_word in banned_words:
+        return jsonify({
+            "message": "This word is banned",
+            "valid": False
+        })
+
+    if algorithm == "bfs":
+        return bfs(words_graph, start_word, target_word, banned_words)
+    elif algorithm == "ucs":
+        return ucs(words_graph, start_word, target_word, banned_words)
+    elif algorithm == "astar":
+        return astar(words_graph, start_word, target_word, banned_words)
+    else:
+        return jsonify({
+            "message": "Invalid algorithm"
+        }), 400
+
+
+@app.route('/graph/<int:depth>', methods=['GET'])
+def get_graph_dict(depth):
+    data = request.get_json()
+    start_word = data.get("start_word")
+
+    from collections import deque
+
+    words_at_depth = {}
+    queue = deque([(start_word, 0)])  # (word, current_depth)
+    visited = set()
+
+    while queue:
+        word, current_depth = queue.popleft()
+
+        if current_depth > depth:
+            return words_at_depth  # No need to continue processing
+
+        if word in visited:
+            continue  # Skip already visited words
+        
+        visited.add(word)
+        
+        # Add the word and its neighbors to the dictionary
+        if current_depth <= depth:
+            words_at_depth[word] = words_graph.get(word, [])
+
+        # Add neighbors to the queue to continue exploring
+        for neighbor in words_graph.get(word, []):
+            if neighbor not in visited:
+                queue.append((neighbor, current_depth + 1))
+    
+    return jsonify(words_at_depth)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
