@@ -1,5 +1,6 @@
 from ucs_module import ucs
 from astar_module import astar
+
 class WNode:
     def __init__(self,word_name,parent,cost):
         self.word_name = word_name
