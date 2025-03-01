@@ -92,7 +92,7 @@ def check_valid_move(start_word,target_word,words_graph):
 print(bfs('cat','big',words_graph))
 print(ucs(words_graph, "cat", "big"))
 print(astar(words_graph, "cat", "big"))
-print("Welcome to the game")
+print("Welcome to the games")
 while True:
     starting_word = input("Enter the starting word: ")
     ending_word = input("Enter the starting word: ")
