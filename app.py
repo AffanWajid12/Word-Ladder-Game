@@ -1,4 +1,5 @@
-
+from ucs_module import ucs
+from astar_module import astar
 class WNode:
     def __init__(self,word_name,parent,cost):
         self.word_name = word_name
@@ -45,8 +46,6 @@ for word in words_list:
                     break
             if count == 1:
                 words_graph[word].append(word2)
-        else:
-            break
 
 
 # Now we got the whole words of list inside a graph. Each word is connected with an another word whose letter difference is by one letter only.
@@ -91,7 +90,8 @@ def check_valid_move(start_word,target_word,words_graph):
     return False
 
 print(bfs('cat','big',words_graph))
-
+print(ucs(words_graph, "cat", "big"))
+print(astar(words_graph, "cat", "big"))
 print("Welcome to the game")
 while True:
     starting_word = input("Enter the starting word: ")
